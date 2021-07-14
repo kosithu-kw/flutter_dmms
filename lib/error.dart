@@ -6,19 +6,7 @@ import 'dart:convert';
 import 'main.dart';
 
 void main(){
-  runApp(
-    MaterialApp(
-      title: 'MON RTL ROUTES',
-      // Start the app with the "/" named route. In this case, the app starts
-      // on the FirstScreen widget.
-      initialRoute: '/',
-      routes: {
-
-        // When navigating to the "/second" route, build the SecondScreen widget.
-        '/home': (context) => HomeApp(),
-      },
-    ),
-  );
+  runApp(ErrorApp());
 }
 
 class ErrorApp extends StatefulWidget {
@@ -41,7 +29,7 @@ class _ErrorAppState extends State<ErrorApp> {
           _isLoading=false;
           _tryText="အင်တာနက်ဆက်သွယ်မှုများပြတ်တောက်နေပါသည်";
         });
-        Navigator.pushNamed(context, '/home');
+        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=>new HomeApp()));
       }
     } on SocketException catch (_) {
         Timer(Duration(seconds: 3), (){

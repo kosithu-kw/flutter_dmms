@@ -70,12 +70,16 @@ class _MainAppState extends State<MainApp> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(_mTitle, style: TextStyle(color: Colors.black, fontSize: 30),),
+                
+                Container(
+                  padding: EdgeInsets.only(left: 80, right: 80, top: 80),
+                  child: Image.asset("assets/images/logo.png"),
+                ),
+                
                 Text(_mSubTitle),
 
-                SizedBox(height: 100,),
                 Container(
-                  padding: EdgeInsets.all(100),
+                  padding: EdgeInsets.all(140),
                   child: LinearProgressIndicator(
                     color: Colors.grey,
                     backgroundColor: Colors.black,

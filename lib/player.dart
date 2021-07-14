@@ -1,13 +1,18 @@
 // This is a minimal example demonstrating a play/pause button and a seek bar.
 // More advanced examples demonstrating other features can be found in the same
 // directory as this example in the GitHub repository.
-
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'package:audio_session/audio_session.dart';
+import 'package:dmms/error.dart';
+import 'package:dmms/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
+
 
 
 class MyPlayer extends StatefulWidget {
@@ -19,11 +24,38 @@ class MyPlayer extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyPlayer> {
+
+  bool _isConnected=true;
+  bool _isLoading=false;
+  String _tryText= "အင်တာနက်ဆက်သွယ်မှုများပြတ်တောက်နေပါသည်";
+
+  checkConnection() async{
+    try {
+      final result = await InternetAddress.lookup('raw.githubusercontent.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        setState(() {
+          _isConnected=true;
+          _player.play();
+        });
+      }
+    } on SocketException catch (_) {
+      setState(() {
+        _isConnected=false;
+        _player.pause();
+      });
+    }
+  }
+
   final AudioPlayer _player = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
+
+    Timer.periodic(new Duration(seconds: 10), (timer) {
+        checkConnection();
+    });
+
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
@@ -71,6 +103,52 @@ class _MyAppState extends State<MyPlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if(!_isConnected){
+      return MaterialApp(
+          home: Scaffold(
+            body: Container(
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if(_isLoading)
+                      Container(
+                        padding: EdgeInsets.only(left: 100, right: 100, bottom: 30),
+                        child: Center(
+                          child: LinearProgressIndicator(
+                            color: Colors.grey,
+                            backgroundColor: Colors.black,
+                          ),
+                        ),
+                      ),
+                    Container(
+                      child: Center(
+                        child: Text(
+                            _tryText
+                        ),
+                      ),
+                    ),
+                    Container(
+                      child: Center(
+                        child: TextButton(
+                          child: Text("Try Again", style: TextStyle(color: Colors.black),),
+                          onPressed: (){
+                            setState(() {
+                              _isLoading=true;
+                              _tryText="ပြန်လည်ချိတ်ဆက်နေသည်...";
+                            });
+                            checkConnection();
+                          },
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ),
+      );
+    }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
