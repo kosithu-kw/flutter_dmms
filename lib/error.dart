@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
-import 'main.dart';
+import 'home.dart';
 
 void main(){
   runApp(ErrorApp());
