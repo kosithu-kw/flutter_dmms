@@ -13,7 +13,8 @@ import 'package:just_audio/just_audio.dart';
 import 'common.dart';
 import 'package:rxdart/rxdart.dart';
 
-
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'ad_helper.dart';
 
 class MyPlayer extends StatefulWidget {
   final data;
@@ -25,6 +26,39 @@ class MyPlayer extends StatefulWidget {
 
 class _MyAppState extends State<MyPlayer> {
 
+
+  // TODO: Add _interstitialAd
+  InterstitialAd? _interstitialAd;
+
+  // TODO: Add _isInterstitialAdReady
+  bool _isInterstitialAdReady = false;
+
+  // TODO: Implement _loadInterstitialAd()
+  void _loadInterstitialAd() {
+    InterstitialAd.load(
+      adUnitId: AdHelper.interstitialAdUnitId,
+      request: AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          this._interstitialAd = ad;
+
+          ad.fullScreenContentCallback = FullScreenContentCallback(
+            onAdDismissedFullScreenContent: (ad) {
+              Navigator.pop(context);
+            },
+          );
+
+          _isInterstitialAdReady = true;
+        },
+        onAdFailedToLoad: (err) {
+          print('Failed to load an interstitial ad: ${err.message}');
+          _isInterstitialAdReady = false;
+        },
+      ),
+    );
+  }
+
+
   bool _isConnected=true;
   bool _isLoading=false;
   String _tryText= "အင်တာနက်ဆက်သွယ်မှုများပြတ်တောက်နေပါသည်";
@@ -34,13 +68,11 @@ class _MyAppState extends State<MyPlayer> {
       final result = await InternetAddress.lookup('raw.githubusercontent.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
         setState(() {
-          _isConnected=true;
           _player.play();
         });
       }
     } on SocketException catch (_) {
       setState(() {
-        _isConnected=false;
         _player.pause();
       });
     }
@@ -52,9 +84,16 @@ class _MyAppState extends State<MyPlayer> {
   void initState() {
     super.initState();
 
+    if(!_isInterstitialAdReady){
+      _loadInterstitialAd();
+    }
+
+    /*
     Timer.periodic(new Duration(seconds: 10), (timer) {
         checkConnection();
     });
+
+     */
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
@@ -87,6 +126,7 @@ class _MyAppState extends State<MyPlayer> {
   void dispose() {
     // Release decoders and buffers back to the operating system making them
     // available for other apps to use.
+    _interstitialAd?.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -103,52 +143,7 @@ class _MyAppState extends State<MyPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if(!_isConnected){
-      return MaterialApp(
-          home: Scaffold(
-            body: Container(
-              child: Container(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if(_isLoading)
-                      Container(
-                        padding: EdgeInsets.only(left: 100, right: 100, bottom: 30),
-                        child: Center(
-                          child: LinearProgressIndicator(
-                            color: Colors.grey,
-                            backgroundColor: Colors.black,
-                          ),
-                        ),
-                      ),
-                    Container(
-                      child: Center(
-                        child: Text(
-                            _tryText
-                        ),
-                      ),
-                    ),
-                    Container(
-                      child: Center(
-                        child: TextButton(
-                          child: Text("Try Again", style: TextStyle(color: Colors.black),),
-                          onPressed: (){
-                            setState(() {
-                              _isLoading=true;
-                              _tryText="ပြန်လည်ချိတ်ဆက်နေသည်...";
-                            });
-                            checkConnection();
-                          },
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-      );
-    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
@@ -156,7 +151,11 @@ class _MyAppState extends State<MyPlayer> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: (){
-              Navigator.pop(context);
+              if (_isInterstitialAdReady) {
+                _interstitialAd?.show();
+              } else {
+                Navigator.pop(context);
+              }
             },
           ),
           centerTitle: true,

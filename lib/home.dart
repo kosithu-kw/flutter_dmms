@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'error.dart';
 import 's_filter.dart';
 import 'package:share/share.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 
 class HomeApp extends StatefulWidget {
@@ -15,12 +16,13 @@ class HomeApp extends StatefulWidget {
 }
 
 class _HomeAppState extends State<HomeApp> {
-
   getData() async{
-    var res=await http.get(Uri.https('raw.githubusercontent.com', "kosithu-kw/dmms_data/master/sayartaws.json"));
-    var jsonData=jsonDecode(res.body);
+    var result=await DefaultCacheManager().getSingleFile("https://raw.githubusercontent.com/kosithu-kw/dmms_data/master/sayartaws.json");
+    var file=await result.readAsString();
+    var jsonData=jsonDecode(file);
     return jsonData;
   }
+
 
   final String _title="ဓမ္မမိတ်ဆွေ";
   final String _subTitle="ဆရာတော်ဘုရားကြီးများ";
@@ -108,6 +110,13 @@ class _HomeAppState extends State<HomeApp> {
                 leading: Icon(Icons.share),
                 onTap: (){
                   Share.share("https://play.google.com/store/apps/details?id=com.goldenmawlamyine.dmms");
+                },
+              ),
+              ListTile(
+                title: Text("Read Me"),
+                leading: Icon(Icons.read_more),
+                onTap: (){
+                  Navigator.of(context).pushNamed('/readme');
                 },
               )
             ],

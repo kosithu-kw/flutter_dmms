@@ -5,6 +5,8 @@ import 'package:dmms/player.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'error.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
 
 
 class Sfilter extends StatefulWidget {
@@ -18,11 +20,13 @@ class Sfilter extends StatefulWidget {
 class _HomeAppState extends State<Sfilter> {
 
 
-   _getAllDhamma() async {
-    var res=await http.get(Uri.https('raw.githubusercontent.com', "kosithu-kw/dmms_data/master/${widget.data['s_url']}"));
-    var jsonData=jsonDecode(res.body);
+  _getAllDhamma() async{
+    var result=await DefaultCacheManager().getSingleFile("https://raw.githubusercontent.com/kosithu-kw/dmms_data/master/${widget.data['s_url']}");
+    var file=await result.readAsString();
+    var jsonData=jsonDecode(file);
     return jsonData;
   }
+
 
   /*
   getData() async{
