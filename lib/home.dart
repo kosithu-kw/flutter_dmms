@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'error.dart';
+import 'dart:async';
 import 's_filter.dart';
 import 'package:share/share.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -23,6 +24,22 @@ class _HomeAppState extends State<HomeApp> {
     return jsonData;
   }
 
+  bool _isUpdate=false;
+
+  _updateData() async{
+    await DefaultCacheManager().emptyCache().then((value){
+      setState(() {
+        _isUpdate=true;
+
+      });
+      Timer(Duration(seconds: 3), () {
+        setState(() {
+          _isUpdate=false;
+        });
+      });
+    });
+  }
+
 
   final String _title="ဓမ္မမိတ်ဆွေ";
   final String _subTitle="ဆရာတော်ဘုရားကြီးများ";
@@ -36,6 +53,13 @@ class _HomeAppState extends State<HomeApp> {
 
         appBar: AppBar(
           centerTitle: true,
+          actions: [
+            IconButton(onPressed: (){
+              _updateData();
+            },
+              icon: Icon(Icons.cloud_download),
+            ),
+          ],
           toolbarHeight: 80,
           backgroundColor: Colors.white,
           iconTheme: IconThemeData(
@@ -125,8 +149,26 @@ class _HomeAppState extends State<HomeApp> {
         ),
         body: Container(
           child: FutureBuilder(
-            future: getData(),
+            future: _isUpdate ? getData() : getData(),
             builder: (context, AsyncSnapshot s){
+              if(_isUpdate)
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(left: 120, right: 120),
+                        child: LinearProgressIndicator(),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text("Updating data from server..."),
+                      )
+                    ],
+                  ),
+                );
+
               if(s.hasData){
                 return ListView.builder(
                     itemCount: s.data.length,

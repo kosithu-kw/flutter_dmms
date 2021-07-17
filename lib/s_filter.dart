@@ -27,6 +27,23 @@ class _HomeAppState extends State<Sfilter> {
     return jsonData;
   }
 
+  bool _isUpdate=false;
+
+  _updateData() async{
+    await DefaultCacheManager().emptyCache().then((value){
+      setState(() {
+        _isUpdate=true;
+
+      });
+      Timer(Duration(seconds: 3), () {
+        setState(() {
+          _isUpdate=false;
+        });
+      });
+    });
+  }
+
+
 
   /*
   getData() async{
@@ -56,6 +73,13 @@ class _HomeAppState extends State<Sfilter> {
 
       appBar: AppBar(
         centerTitle: true,
+        actions: [
+          IconButton(onPressed: (){
+            _updateData();
+          },
+            icon: Icon(Icons.cloud_download),
+          ),
+        ],
         toolbarHeight: 125,
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(
@@ -131,8 +155,25 @@ class _HomeAppState extends State<Sfilter> {
 
         body: Container(
           child: FutureBuilder(
-            future: _getAllDhamma(),
+            future: _isUpdate ? _getAllDhamma() : _getAllDhamma(),
             builder: (context, AsyncSnapshot s){
+              if(_isUpdate)
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      Container(
+                        padding: EdgeInsets.only(left: 120, right: 120),
+                        child: LinearProgressIndicator(),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text("Updating data from server..."),
+                      )
+                    ],
+                  ),
+                );
               if(s.hasData){
                 return ListView.builder(
                       itemCount: s.data.length,

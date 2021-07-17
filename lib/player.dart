@@ -85,7 +85,7 @@ class _MyAppState extends State<MyPlayer> {
     super.initState();
 
     if(!_isInterstitialAdReady){
-      _loadInterstitialAd();
+      //_loadInterstitialAd();
     }
 
     /*
@@ -152,7 +152,7 @@ class _MyAppState extends State<MyPlayer> {
             icon: Icon(Icons.arrow_back),
             onPressed: (){
               if (_isInterstitialAdReady) {
-                _interstitialAd?.show();
+               // _interstitialAd?.show();
               } else {
                 Navigator.pop(context);
               }
