@@ -4,8 +4,11 @@ import 'dart:io';
 import 'package:dmms/player.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:page_transition/page_transition.dart';
 import 'error.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+
+import 'home.dart';
 
 
 
@@ -72,6 +75,12 @@ class _HomeAppState extends State<Sfilter> {
     return  Scaffold(
 
       appBar: AppBar(
+        leading: IconButton(
+          onPressed: (){
+            Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+          },
+          icon: Icon(Icons.arrow_back),
+        ),
         centerTitle: true,
         actions: [
           IconButton(onPressed: (){

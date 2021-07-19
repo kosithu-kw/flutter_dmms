@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:dmms/readme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:page_transition/page_transition.dart';
 import 'error.dart';
 import 'dart:async';
 import 's_filter.dart';
@@ -47,7 +49,11 @@ class _HomeAppState extends State<HomeApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return WillPopScope(
+      onWillPop: ()async{
+        return  false;
+      },
+      child: MaterialApp(
       title: _subTitle,
       home: Scaffold(
 
@@ -78,46 +84,12 @@ class _HomeAppState extends State<HomeApp> {
 
                 ),
               ),
-              /*
-                Container(
-                  child: Text(_subTitle,
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          height: 2.0
-                      )),
-                )
 
-                 */
             ],
           ),
         ),
 
 
-        /*
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text(_title, style: TextStyle(color: Color.fromRGBO(0, 0, 0, 1), fontSize: 20.0),),
-          //  elevation: 10,
-            backgroundColor: Colors.white,
-            iconTheme: IconThemeData(
-              color: Color.fromRGBO(0, 0, 0, 1)
-            ),
-
-            bottom: PreferredSize(
-              child: Text(_subTitle,
-                  style: TextStyle(
-                      color: Colors.black,
-                      height: 2.0
-                  )),
-              preferredSize: Size.fromHeight(15),
-
-            ),
-
-
-          ),
-
-           */
         drawer: Drawer(
           child: ListView(
             children: [
@@ -125,10 +97,9 @@ class _HomeAppState extends State<HomeApp> {
                 title: Text("App Version"),
                 subtitle: Text("1.0.0"),
                 leading: Icon(Icons.settings_accessibility),
-                onTap: (){
-                  Navigator.of(context).pushNamed("/home");
-                },
+
               ),
+              /*
               ListTile(
                 title: Text("Share App"),
                 leading: Icon(Icons.share),
@@ -136,11 +107,13 @@ class _HomeAppState extends State<HomeApp> {
                   Share.share("https://play.google.com/store/apps/details?id=com.goldenmawlamyine.dmms");
                 },
               ),
+
+               */
               ListTile(
                 title: Text("Read Me"),
                 leading: Icon(Icons.read_more),
                 onTap: (){
-                  Navigator.of(context).pushNamed('/readme');
+                  Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: ReadmeApp()));
                 },
               )
             ],
@@ -218,6 +191,7 @@ class _HomeAppState extends State<HomeApp> {
           ),
         ),
       ),
+      )
     );
   }
 }

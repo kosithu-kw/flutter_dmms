@@ -5,8 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:audio_session/audio_session.dart';
-import 'package:dmms/error.dart';
-import 'package:dmms/main.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
@@ -15,6 +14,10 @@ import 'package:rxdart/rxdart.dart';
 
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'ad_helper.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:http/http.dart' as http;
+
+import 'home.dart';
 
 class MyPlayer extends StatefulWidget {
   final data;
@@ -27,6 +30,29 @@ class MyPlayer extends StatefulWidget {
 class _MyAppState extends State<MyPlayer> {
 
 
+  String InterstitialId="";
+  bool showInter=false;
+
+  _getAdId() async{
+    var result=await http.get(Uri.https("raw.githubusercontent.com", "kosithu-kw/dmms_data/master/ads.json"));
+    var jsonData=await jsonDecode(result.body);
+    print(jsonData['int']);
+
+    setState(() {
+      InterstitialId=jsonData['int'];
+      if(jsonData['showInter']=="true"){
+        setState(() {
+          showInter=true;
+        });
+      }else{
+        setState(() {
+          showInter=false;
+        });
+      }
+    });
+  }
+
+
   // TODO: Add _interstitialAd
   InterstitialAd? _interstitialAd;
 
@@ -36,7 +62,7 @@ class _MyAppState extends State<MyPlayer> {
   // TODO: Implement _loadInterstitialAd()
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: AdHelper.interstitialAdUnitId,
+      adUnitId: InterstitialId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -44,7 +70,7 @@ class _MyAppState extends State<MyPlayer> {
 
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
-              Navigator.pop(context);
+              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
             },
           );
 
@@ -63,45 +89,33 @@ class _MyAppState extends State<MyPlayer> {
   bool _isLoading=false;
   String _tryText= "အင်တာနက်ဆက်သွယ်မှုများပြတ်တောက်နေပါသည်";
 
-  checkConnection() async{
-    try {
-      final result = await InternetAddress.lookup('raw.githubusercontent.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        setState(() {
-          _player.play();
-        });
-      }
-    } on SocketException catch (_) {
-      setState(() {
-        _player.pause();
-      });
-    }
-  }
 
   final AudioPlayer _player = AudioPlayer();
+
 
   @override
   void initState() {
     super.initState();
 
-    if(!_isInterstitialAdReady){
-      //_loadInterstitialAd();
-    }
+    _getAdId();
 
-    /*
-    Timer.periodic(new Duration(seconds: 10), (timer) {
-        checkConnection();
+    Timer(Duration(seconds: 3), (){
+      if(showInter){
+        if(!_isInterstitialAdReady){
+          _loadInterstitialAd();
+        }
+      }
     });
 
-     */
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.black,
     ));
     _init();
 
-    _player.play();
+    //_player.play();
   }
+
 
   Future<void> _init() async {
     // Inform the operating system of our app's audio attributes etc.
@@ -151,11 +165,7 @@ class _MyAppState extends State<MyPlayer> {
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
             onPressed: (){
-              if (_isInterstitialAdReady) {
-               // _interstitialAd?.show();
-              } else {
-                Navigator.pop(context);
-              }
+              Navigator.pop(context);
             },
           ),
           centerTitle: true,
@@ -185,6 +195,19 @@ class _MyAppState extends State<MyPlayer> {
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: (){
+            if(showInter && _isInterstitialAdReady){
+              _interstitialAd?.show();
+              _player.stop();
+            }else{
+              _player.stop();
+              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+            }
+          },
+          child: Icon(Icons.home_outlined, color: Colors.black,),
+          backgroundColor: Colors.white70,
+        ),
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -194,7 +217,9 @@ class _MyAppState extends State<MyPlayer> {
                 padding: EdgeInsets.all(20),
                 child: Center(
                     
-                    child: Text(widget.data['d_title']),
+                    child: Text(widget.data['d_title'],
+                      textAlign: TextAlign.center,
+                    ),
                   
                 ),
               ),
@@ -219,6 +244,7 @@ class _MyAppState extends State<MyPlayer> {
           ),
         ),
       ),
+
     );
   }
 }
@@ -231,7 +257,7 @@ class ControlButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return  Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Opens volume slider dialog
@@ -312,6 +338,7 @@ class ControlButtons extends StatelessWidget {
           ),
         ),
       ],
+
     );
   }
 }
