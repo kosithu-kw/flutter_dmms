@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dmms/readme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:page_transition/page_transition.dart';
 import 'home.dart';
 import 'error.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -23,7 +24,7 @@ void main(){
         '/': (context) => MainApp(),
 
         // When navigating to the "/second" route, build the SecondScreen widget.
-        '/home': (context) => HomeApp(),
+        '/home': (context) => Home(),
         '/error' : (context) => ErrorApp(),
         '/readme':(context)=> ReadmeApp()
       },
@@ -82,7 +83,8 @@ class _MainAppState extends State<MainApp> {
     try {
       final result = await InternetAddress.lookup('raw.githubusercontent.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        Navigator.pushNamed(context, '/home');
+        Navigator.push(context, PageTransition(type: PageTransitionType.leftToRight, child: Home()));
+
       }
     } on SocketException catch (_) {
       Navigator.pushNamed(context, '/error');
@@ -111,13 +113,13 @@ class _MainAppState extends State<MainApp> {
                 
                 Container(
                   padding: EdgeInsets.only(left: 80, right: 80, top: 80),
-                  child: Image.asset("assets/images/logo.png"),
+                  child: Image.asset("assets/images/logo.png", width: 120,),
                 ),
                 
                 Text(_mSubTitle),
 
                 Container(
-                  padding: EdgeInsets.all(140),
+                  padding: EdgeInsets.only(left: 160, right: 160, top: 150),
                   child: LinearProgressIndicator(
                     color: Colors.grey,
                     backgroundColor: Colors.black,

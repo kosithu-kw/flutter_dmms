@@ -1,197 +1,259 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:dmms/readme.dart';
+import 'package:dmms/quote.dart';
+import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
-import 'error.dart';
-import 'dart:async';
-import 's_filter.dart';
-import 'package:share/share.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-
-class HomeApp extends StatefulWidget {
-  const HomeApp({Key? key}) : super(key: key);
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
 
   @override
-  _HomeAppState createState() => _HomeAppState();
+  _HomeState createState() => _HomeState();
 }
 
-class _HomeAppState extends State<HomeApp> {
-  getData() async{
-    var result=await DefaultCacheManager().getSingleFile("https://raw.githubusercontent.com/kosithu-kw/dmms_data/master/sayartaws.json");
-    var file=await result.readAsString();
-    var jsonData=jsonDecode(file);
-    return jsonData;
-  }
+class _HomeState extends State<Home> {
 
-  bool _isUpdate=false;
 
-  _updateData() async{
-    await DefaultCacheManager().emptyCache().then((value){
-      setState(() {
-        _isUpdate=true;
+  late BannerAd _bannerAd;
 
-      });
-      Timer(Duration(seconds: 3), () {
+  // TODO: Add _isBannerAdReady
+  bool _isBannerAdReady = false;
+
+  String BannerId="";
+  bool showBanner=true;
+
+  _getAdId() async{
+    var result=await http.get(Uri.https("raw.githubusercontent.com", "kosithu-kw/dmms_data/master/ads.json"));
+    var jsonData=await jsonDecode(result.body);
+    //print(jsonData['banner']);
+
+    setState(() {
+      BannerId=jsonData['banner'];
+      if(jsonData['showBanner']=="true"){
+        _callBannerAds();
         setState(() {
-          _isUpdate=false;
+          showBanner=true;
         });
-      });
+      }else{
+        setState(() {
+          showBanner=false;
+        });
+      }
     });
   }
 
+  _callBannerAds(){
+    // TODO: Initialize _bannerAd
+    _bannerAd = BannerAd(
+      adUnitId: BannerId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
+    );
 
-  final String _title="ဓမ္မမိတ်ဆွေ";
-  final String _subTitle="ဆရာတော်ဘုရားကြီးများ";
+    _bannerAd.load();
+  }
+
+
 
 
   @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: ()async{
-        return  false;
+  void initState() {
+
+    _getAdId();
+
+    // TODO: implement initState
+    super.initState();
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    _bannerAd.dispose();
+    super.dispose();
+  }
+
+
+  _confirmExit(){
+
+    _showAlert(){
+      return  AlertDialog(
+        //title: Text("အတည်ပြုပါ"),
+        content: Text("Exit from application ?"),
+        actions: [
+          TextButton(onPressed: (){
+            Navigator.pop(context);
+          }, child: Text("No", style: TextStyle(color: Colors.black),)),
+          TextButton(onPressed: (){
+            exit(0);
+          }, child: Text("Yes", style: TextStyle(color: Colors.black),))
+        ],
+
+      );
+    }
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return _showAlert();
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(onWillPop: ()async{
+      return await _confirmExit();
+    },
       child: MaterialApp(
-      title: _subTitle,
-      home: Scaffold(
+        home: Scaffold(
+          body: SafeArea(
+            child: Stack(
+              children: [
+                _isBannerAdReady ? WithAds() : WithoutAds() ,
 
-        appBar: AppBar(
-          centerTitle: true,
-          actions: [
-            IconButton(onPressed: (){
-              _updateData();
-            },
-              icon: Icon(Icons.cloud_download),
-            ),
-          ],
-          toolbarHeight: 80,
-          backgroundColor: Colors.white,
-          iconTheme: IconThemeData(
-              color: Color.fromRGBO(0, 0, 0, 1)
-          ),
-          title: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-
-              Container(
-                child: Text(_subTitle,
-                  style: TextStyle(
-                      color: Color.fromRGBO(0, 0, 0, 1),
-                      fontSize: 20
-                  ),
-
-                ),
-              ),
-
-            ],
-          ),
-        ),
-
-
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              ListTile(
-                title: Text("App Version"),
-                subtitle: Text("1.0.0"),
-                leading: Icon(Icons.settings_accessibility),
-
-              ),
-              /*
-              ListTile(
-                title: Text("Share App"),
-                leading: Icon(Icons.share),
-                onTap: (){
-                  Share.share("https://play.google.com/store/apps/details?id=com.goldenmawlamyine.dmms");
-                },
-              ),
-
-               */
-              ListTile(
-                title: Text("Read Me"),
-                leading: Icon(Icons.read_more),
-                onTap: (){
-                  Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: ReadmeApp()));
-                },
-              )
-            ],
-          ),
-
-        ),
-        body: Container(
-          child: FutureBuilder(
-            future: _isUpdate ? getData() : getData(),
-            builder: (context, AsyncSnapshot s){
-              if(_isUpdate)
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-
-                    children: [
-                      Container(
-                        padding: EdgeInsets.only(left: 120, right: 120),
-                        child: LinearProgressIndicator(),
+                if (_isBannerAdReady)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: _bannerAd.size.width.toDouble(),
+                        height: _bannerAd.size.height.toDouble(),
+                        child: AdWidget(ad: _bannerAd),
                       ),
-                      Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text("Updating data from server..."),
-                      )
-                    ],
-                  ),
-                );
-
-              if(s.hasData){
-                return ListView.builder(
-                    itemCount: s.data.length,
-                    itemBuilder: (context, i){
-                      return Card(
-                        child: ListTile(
-                          onTap: (){
-                            Navigator.of(context)
-                                .push(MaterialPageRoute(builder: (BuildContext context)=>new Sfilter(data: s.data[i])));
-                          },
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(s.data[i]['s_image']),
-                          ),
-                          title: Text(s.data[i]['s_name']),
-                          trailing: Icon(Icons.navigate_next),
-                          // trailing: Icon(Icons.navigate_next),
-                        ),
-
-                      );
-                    }
-                );
-              }else if(s.hasError){
-                return Center(
-                    child: IconButton(
-                      onPressed: (){
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) => new ErrorApp()));
-                      },
-                      icon: Icon(Icons.refresh_outlined),
-                      color: Colors.black,
-                    )
-                );
-              }else{
-                return Container(
-                  padding: EdgeInsets.only(left: 100, right: 100),
-                  child: Center(
-                    child: LinearProgressIndicator(
-                      color: Colors.grey,
-                      backgroundColor: Colors.black,
                     ),
-                  ),
-                );
-              }
-            },
-          ),
+
+              ],
+            ),
+          )
         ),
       ),
-      )
     );
   }
 }
+
+class WithAds extends StatefulWidget {
+  const WithAds({Key? key}) : super(key: key);
+
+  @override
+  _WithAdsState createState() => _WithAdsState();
+}
+
+class _WithAdsState extends State<WithAds> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(top: 70, bottom: 20, left: 20, right: 20),
+      decoration: BoxDecoration(
+          border: Border(
+              bottom: BorderSide(
+                  width: 70.0,
+                  color: Color.fromRGBO(120, 124, 130, 0.1)
+              )
+          )
+      ),
+      child: Center(
+          child: Column (
+            children: [
+              Container(
+                child: Image.asset("assets/images/logo.png", height: 120,),
+              ),
+              Container(
+                child: Card(
+                  child: Quote(),
+                ),
+              ),
+              SizedBox(height: 20,),
+              Container(
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pushReplacement(context, PageTransition(child: Sayardaw(), type: PageTransitionType.rightToLeft));
+                    },
+                    child: Card(
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              Icon(Icons.play_circle_outline_sharp),
+                              SizedBox(width: 20,),
+                              Text("တရားတော်များနားဆင်ရန်", style: TextStyle(color: Colors.black, fontSize: 16),)
+                            ],
+                          ),
+                        )
+                    ),
+                  )
+              )
+            ],
+          )
+      ),
+    );
+  }
+}
+
+class WithoutAds extends StatefulWidget {
+  const WithoutAds({Key? key}) : super(key: key);
+
+  @override
+  _WithoutAdsState createState() => _WithoutAdsState();
+}
+
+class _WithoutAdsState extends State<WithoutAds> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(top: 70, bottom: 20, left: 20, right: 20),
+
+      child: Center(
+          child: Column (
+            children: [
+              Container(
+                child: Image.asset("assets/images/logo.png", height: 120,),
+              ),
+              Container(
+                child: Card(
+                  child: Quote(),
+                ),
+              ),
+              SizedBox(height: 20,),
+              Container(
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pushReplacement(context, PageTransition(child: Sayardaw(), type: PageTransitionType.rightToLeft));
+                    },
+                    child: Card(
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          child: Row(
+                            children: [
+                              Icon(Icons.play_circle_outline_sharp),
+                              SizedBox(width: 20,),
+                              Text("တရားတော်များနားဆင်ရန်", style: TextStyle(color: Colors.black, fontSize: 16),)
+                            ],
+                          ),
+                        )
+                    ),
+                  )
+              )
+            ],
+          )
+      ),
+    );
+  }
+}
+

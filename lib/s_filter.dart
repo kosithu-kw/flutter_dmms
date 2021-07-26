@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dmms/player.dart';
+import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
@@ -71,13 +72,12 @@ class _HomeAppState extends State<Sfilter> {
 
   @override
   Widget build(BuildContext context) {
-
-    return  Scaffold(
+  return Scaffold(
 
       appBar: AppBar(
         leading: IconButton(
           onPressed: (){
-            Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+            Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Sayardaw()));
           },
           icon: Icon(Icons.arrow_back),
         ),
@@ -123,44 +123,6 @@ class _HomeAppState extends State<Sfilter> {
           ),
       ),
 
-      /*
-        appBar: AppBar(
-          centerTitle: true,
-          title: CircleAvatar(
-            backgroundImage: NetworkImage(widget.data['s_image'], ),
-          ),
-         // title: Text(widget.data['s_name'], style: TextStyle(color: Color.fromRGBO(120, 2, 22, 1)),),
-          //elevation: 10,
-          backgroundColor: Colors.white,
-          iconTheme: IconThemeData(
-              color: Color.fromRGBO(0, 0, 0, 1)
-          ),
-
-            bottom: PreferredSize(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(left: 20, right: 20),
-                    child: Text(widget.data['s_name'], style: TextStyle(fontSize: 17,),),
-                  ),
-                  Container(
-                    child: Text(_subTitle,
-                        style: TextStyle(
-                            color: Colors.black,
-                            height: 2.0
-                        )),
-                  ),
-                ],
-              ),
-              preferredSize: Size.fromHeight(60),
-
-            ),
-
-
-        ),
-
-       */
 
         body: Container(
           child: FutureBuilder(

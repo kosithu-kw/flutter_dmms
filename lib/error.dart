@@ -22,7 +22,7 @@ class _ErrorAppState extends State<ErrorApp> {
       final result = await InternetAddress.lookup('raw.githubusercontent.com');
       if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
 
-        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=> HomeApp()));
+        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context)=> Home()));
       }
     } on SocketException catch (_) {
       Timer(Duration(seconds: 3), (){

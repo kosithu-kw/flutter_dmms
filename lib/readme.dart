@@ -34,7 +34,7 @@ class _ReadmeAppState extends State<ReadmeApp> {
           title: Text(_title, style: TextStyle(color: Colors.black),),
           leading: IconButton(
             onPressed: (){
-               Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+               Navigator.push(context, PageTransition(type: PageTransitionType.leftToRight, child: Home()));
 
             },
             icon: Icon(Icons.arrow_back),

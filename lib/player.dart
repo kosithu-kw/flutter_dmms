@@ -36,17 +36,20 @@ class _MyAppState extends State<MyPlayer> {
   _getAdId() async{
     var result=await http.get(Uri.https("raw.githubusercontent.com", "kosithu-kw/dmms_data/master/ads.json"));
     var jsonData=await jsonDecode(result.body);
-    print(jsonData['int']);
+    //print(jsonData['int']);
 
     setState(() {
       InterstitialId=jsonData['int'];
       if(jsonData['showInter']=="true"){
         setState(() {
+          if(!_isInterstitialAdReady){
+            _loadInterstitialAd();
+          }
           showInter=true;
         });
       }else{
         setState(() {
-          showInter=false;
+          showInter=true;
         });
       }
     });
@@ -70,7 +73,7 @@ class _MyAppState extends State<MyPlayer> {
 
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
-              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
             },
           );
 
@@ -100,11 +103,7 @@ class _MyAppState extends State<MyPlayer> {
     _getAdId();
 
     Timer(Duration(seconds: 3), (){
-      if(showInter){
-        if(!_isInterstitialAdReady){
-          _loadInterstitialAd();
-        }
-      }
+
     });
 
 
@@ -113,7 +112,7 @@ class _MyAppState extends State<MyPlayer> {
     ));
     _init();
 
-    //_player.play();
+    _player.play();
   }
 
 
@@ -202,7 +201,7 @@ class _MyAppState extends State<MyPlayer> {
               _player.stop();
             }else{
               _player.stop();
-              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: HomeApp()));
+              Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
             }
           },
           child: Icon(Icons.home_outlined, color: Colors.black,),
