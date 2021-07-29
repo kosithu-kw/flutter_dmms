@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:audio_session/audio_session.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,21 +39,21 @@ class _MyAppState extends State<MyPlayer> {
     var jsonData=await jsonDecode(result.body);
     //print(jsonData['int']);
 
-    setState(() {
-      InterstitialId=jsonData['int'];
       if(jsonData['showInter']=="true"){
         setState(() {
+          InterstitialId=jsonData['int'];
+          showInter=true;
           if(!_isInterstitialAdReady){
             _loadInterstitialAd();
           }
-          showInter=true;
+
         });
       }else{
         setState(() {
-          showInter=true;
+          showInter=false;
         });
       }
-    });
+
   }
 
 
@@ -101,10 +102,6 @@ class _MyAppState extends State<MyPlayer> {
     super.initState();
 
     _getAdId();
-
-    Timer(Duration(seconds: 3), (){
-
-    });
 
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -160,40 +157,6 @@ class _MyAppState extends State<MyPlayer> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: (){
-              Navigator.pop(context);
-            },
-          ),
-          centerTitle: true,
-          toolbarHeight: 120,
-          backgroundColor: Colors.white,
-          iconTheme: IconThemeData(
-              color: Color.fromRGBO(0, 0, 0, 1)
-          ),
-          title: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                child:  CircleAvatar(
-                  backgroundImage: NetworkImage(widget.data['s_image'], ),
-                ),
-              ),
-              Container(
-                child: Text(widget.data['s_name'],
-                  style: TextStyle(
-                      color: Color.fromRGBO(0, 0, 0, 1),
-                      fontSize: 18
-                  ),
-
-                ),
-              ),
-
-            ],
-          ),
-        ),
         floatingActionButton: FloatingActionButton(
           onPressed: (){
             if(showInter && _isInterstitialAdReady){
@@ -204,43 +167,94 @@ class _MyAppState extends State<MyPlayer> {
               Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
             }
           },
-          child: Icon(Icons.home_outlined, color: Colors.black,),
+          child: Icon(Icons.home, color: Colors.black,),
           backgroundColor: Colors.white70,
         ),
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Stack(
             children: [
-              Container(
-                padding: EdgeInsets.all(20),
-                child: Center(
-                    
-                    child: Text(widget.data['d_title'],
-                      textAlign: TextAlign.center,
+              Column(
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                //mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                      margin: EdgeInsets.only(top: 20),
+                      height: 250,
+
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: "${widget.data['s_image']}",
+                          //height: 50,
+                          progressIndicatorBuilder: (context, url, downloadProgress) =>
+                              LinearProgressIndicator(value: downloadProgress.progress,
+                                color: Colors.white70,
+                                backgroundColor: Colors.red.withOpacity(0.3),
+                              ),
+                          errorWidget: (context, url, error) => Icon(Icons.error),
+                        ),
+                      )
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                    child: Text("${widget.data['s_name']}", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                  ),
+                  Container(
+                    padding: EdgeInsets.only(top: 10, bottom: 10),
+                    child: Center(
+                    child: Container(
+                      padding: EdgeInsets.only(left: 20, right: 20),
+                      child: Text(widget.data['d_title'],
+                        textAlign: TextAlign.center,
+                      ),
+                    )
                     ),
-                  
+                  ),
+                  // Display play/pause button and volume/speed sliders.
+                  ControlButtons(_player),
+                  // Display seek bar. Using StreamBuilder, this widget rebuilds
+                  // each time the position, buffered position or duration changes.
+                  StreamBuilder<PositionData>(
+                    stream: _positionDataStream,
+                    builder: (context, snapshot) {
+                      final positionData = snapshot.data;
+                      return SeekBar(
+                        duration: positionData?.duration ?? Duration.zero,
+                        position: positionData?.position ?? Duration.zero,
+                        bufferedPosition:
+                        positionData?.bufferedPosition ?? Duration.zero,
+                        onChangeEnd: _player.seek,
+                      );
+                    },
+                  ),
+
+                ],
+              ),
+              Container(
+                margin: EdgeInsets.only(left: 20, bottom: 15),
+                child: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(blurRadius: 5, color: Color.fromRGBO(212, 213, 214, .8), spreadRadius: 3)],
+                    ),
+                    child: InkWell(
+                      onTap: (){
+                        Navigator.pop(context);
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.white70,
+                        child: Icon(Icons.arrow_back, color: Colors.black, size: 25,),
+                      ),
+                    )
+                  )
                 ),
-              ),
-              // Display play/pause button and volume/speed sliders.
-              ControlButtons(_player),
-              // Display seek bar. Using StreamBuilder, this widget rebuilds
-              // each time the position, buffered position or duration changes.
-              StreamBuilder<PositionData>(
-                stream: _positionDataStream,
-                builder: (context, snapshot) {
-                  final positionData = snapshot.data;
-                  return SeekBar(
-                    duration: positionData?.duration ?? Duration.zero,
-                    position: positionData?.position ?? Duration.zero,
-                    bufferedPosition:
-                    positionData?.bufferedPosition ?? Duration.zero,
-                    onChangeEnd: _player.seek,
-                  );
-                },
-              ),
+              )
             ],
-          ),
+          )
         ),
       ),
 

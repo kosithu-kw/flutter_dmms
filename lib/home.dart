@@ -26,26 +26,26 @@ class _HomeState extends State<Home> {
   bool _isBannerAdReady = false;
 
   String BannerId="";
-  bool showBanner=true;
+  bool showBanner=false;
 
   _getAdId() async{
     var result=await http.get(Uri.https("raw.githubusercontent.com", "kosithu-kw/dmms_data/master/ads.json"));
     var jsonData=await jsonDecode(result.body);
     //print(jsonData['banner']);
 
-    setState(() {
-      BannerId=jsonData['banner'];
       if(jsonData['showBanner']=="true"){
-        _callBannerAds();
         setState(() {
+          BannerId=jsonData['banner'];
           showBanner=true;
         });
+        _callBannerAds();
+
       }else{
         setState(() {
           showBanner=false;
         });
       }
-    });
+
   }
 
   _callBannerAds(){
@@ -82,6 +82,7 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
   }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -123,7 +124,9 @@ class _HomeState extends State<Home> {
       return await _confirmExit();
     },
       child: MaterialApp(
+
         home: Scaffold(
+
           body: SafeArea(
             child: Stack(
               children: [
@@ -164,7 +167,7 @@ class _WithAdsState extends State<WithAds> {
           border: Border(
               bottom: BorderSide(
                   width: 70.0,
-                  color: Color.fromRGBO(120, 124, 130, 0.1)
+                  color: Colors.white
               )
           )
       ),
@@ -179,7 +182,7 @@ class _WithAdsState extends State<WithAds> {
                   child: Quote(),
                 ),
               ),
-              SizedBox(height: 20,),
+              SizedBox(height: 10,),
               Container(
                   child: InkWell(
                     onTap: (){
@@ -230,7 +233,7 @@ class _WithoutAdsState extends State<WithoutAds> {
                   child: Quote(),
                 ),
               ),
-              SizedBox(height: 20,),
+              SizedBox(height: 10,),
               Container(
                   child: InkWell(
                     onTap: (){

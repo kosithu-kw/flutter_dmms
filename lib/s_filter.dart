@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dmms/player.dart';
 import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
@@ -63,11 +64,13 @@ class _HomeAppState extends State<Sfilter> {
   void initState() {
     // TODO: implement initState
    // print(widget.data);
+    setState(() {
 
+    });
 
     super.initState();
   }
-  final String _subTitle="တရားတော်များ";
+  final String _subTitle="၏တရားတော်များ";
 
 
   @override
@@ -77,18 +80,22 @@ class _HomeAppState extends State<Sfilter> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: (){
-            Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Sayardaw()));
+            Navigator.push(context, PageTransition(type: PageTransitionType.leftToRight, child: Sayardaw()));
           },
           icon: Icon(Icons.arrow_back),
         ),
         centerTitle: true,
+        /*
         actions: [
+
           IconButton(onPressed: (){
             _updateData();
           },
             icon: Icon(Icons.cloud_download),
           ),
         ],
+
+         */
         toolbarHeight: 125,
         backgroundColor: Colors.white,
         iconTheme: IconThemeData(
@@ -98,9 +105,28 @@ class _HomeAppState extends State<Sfilter> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                  child:  CircleAvatar(
-                    backgroundImage: NetworkImage(widget.data['s_image'], ),
-                  ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.yellowAccent.withOpacity(0.3),
+                      spreadRadius: 3,
+                      blurRadius: 3,
+                      offset: Offset(0, 4), // changes position of shadow
+                    ),
+                  ],
+                ),
+               child:  CachedNetworkImage(
+                      imageUrl: "${widget.data['s_image']}",
+                      height: 50,
+                      progressIndicatorBuilder: (context, url, downloadProgress) =>
+                          LinearProgressIndicator(value: downloadProgress.progress,
+                            color: Colors.white70,
+                            backgroundColor: Colors.red.withOpacity(0.3),
+                          ),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ),
+
               ),
               Container(
                   child: Text(widget.data['s_name'],
@@ -114,9 +140,9 @@ class _HomeAppState extends State<Sfilter> {
               Container(
                 child: Text(_subTitle,
                     style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        height: 2.0
+                        color: Colors.grey,
+                        fontSize: 14,
+                        height: 1.5
                     )),
               )
             ],
@@ -146,25 +172,34 @@ class _HomeAppState extends State<Sfilter> {
                   ),
                 );
               if(s.hasData){
-                return ListView.builder(
-                      itemCount: s.data.length,
-                      itemBuilder: (context, i) {
-                        return Card(
-                          child: ListTile(
-                            onTap: () {
+                  if(s.data.length < 1){
+                    return Center(
+                      child: Container(
+                        padding: EdgeInsets.only(left: 20, right: 20),
+                        child: Text("ဆရာတော်ဘုရားကြီး၏တရားတော်များ Server  ပေါ်တွင်မရှိသေးပါ။ နောက်ရက်တွေမှာပြန်လည်ကြိုးစားကြည့်ပါ။", textAlign: TextAlign.center,),
+                      )
+                    );
+                  }else{
+                    return ListView.builder(
+                        itemCount: s.data.length,
+                        itemBuilder: (context, i) {
+                          return Card(
+                            child: ListTile(
+                              onTap: () {
                                 Navigator.of(context)
                                     .push(MaterialPageRoute(builder: (BuildContext context)=>new MyPlayer(data: s.data[i])));
-                            },
+                              },
 
-                            title: Text(s.data[i]['d_title']),
-                            leading: Icon(Icons.play_circle,color: Colors.black,),
-                            subtitle: Text(s.data[i]['s_name']),
-                          ),
+                              title: Text(s.data[i]['d_title'], style: TextStyle(height: 1.5, color: Colors.black),),
+                              leading: Icon(Icons.play_circle,color: Colors.black,),
+                              subtitle: Text(s.data[i]['s_name']),
+                            ),
 
-                        );
-                      }
-                  );
-                
+                          );
+                        }
+                    );
+
+                  }
               }else if(s.hasError){
                 return Center(
                     child: IconButton(

@@ -9,6 +9,7 @@ import 'home.dart';
 import 's_filter.dart';
 
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class Sayardaw extends StatefulWidget {
   const Sayardaw({Key? key}) : super(key: key);
@@ -47,7 +48,6 @@ class _SayardawState extends State<Sayardaw> {
 
 
 
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -59,7 +59,6 @@ class _SayardawState extends State<Sayardaw> {
           home: Scaffold(
 
             appBar: AppBar(
-              centerTitle: true,
               actions: [
                 IconButton(onPressed: (){
                   _updateData();
@@ -67,27 +66,19 @@ class _SayardawState extends State<Sayardaw> {
                   icon: Icon(Icons.cloud_download),
                 ),
               ],
-              toolbarHeight: 80,
+              //toolbarHeight: 80,
               backgroundColor: Colors.white,
               iconTheme: IconThemeData(
                   color: Color.fromRGBO(0, 0, 0, 1)
               ),
-              title: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-
-                  Container(
-                    child: Text(_subTitle,
+              title: Text(_subTitle,
                       style: TextStyle(
                           color: Color.fromRGBO(0, 0, 0, 1),
                           fontSize: 20
                       ),
 
                     ),
-                  ),
 
-                ],
-              ),
             ),
 
 
@@ -131,6 +122,7 @@ class _SayardawState extends State<Sayardaw> {
               backgroundColor: Colors.white70,
             ),
             body: Container(
+              padding: EdgeInsets.all(5),
               child: FutureBuilder(
                 future: _isUpdate ? getData() : getData(),
                 builder: (context, AsyncSnapshot s){
@@ -153,29 +145,63 @@ class _SayardawState extends State<Sayardaw> {
                     );
 
                   if(s.hasData){
-                    return ListView.builder(
-                        itemCount: s.data.length,
-                        itemBuilder: (context, i){
-                          return Card(
-                              child:Container(
-                                padding: EdgeInsets.only(top: 10, bottom: 10),
-                                child: ListTile(
-                                  onTap: (){
-                                    // Navigator.of(context).push(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
-                                    Navigator.of(context).pushReplacement(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
-                                  },
-                                  leading: CircleAvatar(
-                                    backgroundImage: NetworkImage(s.data[i]['s_image']),
-                                  ),
-                                  title: Text(s.data[i]['s_name']),
-                                  subtitle: Text("၏တရားတော်များ"),
-                                  trailing: Icon(Icons.navigate_next),
-                                  // trailing: Icon(Icons.navigate_next),
-                                ),
-                              )
-                          );
-                        }
+
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: MediaQuery.of(context).size.width /
+                          (MediaQuery.of(context).size.height / 1.8),
+                      ),
+                      shrinkWrap: true,
+                      itemBuilder: (_, i) {
+                        return InkWell(
+                          onTap: (){
+                            Navigator.of(context).pushReplacement(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
+
+                          },
+                          child: Card(
+                            elevation: 2,
+                            shadowColor: Colors.black,
+                            child: Container(
+                              padding: EdgeInsets.all(2),
+                                child: Column(
+                                children: [
+                                    Container(
+                                      margin: EdgeInsets.only(bottom: 5),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.yellowAccent.withOpacity(0.3),
+                                            spreadRadius: 3,
+                                            blurRadius: 3,
+                                            offset: Offset(0, 4), // changes position of shadow
+                                          ),
+                                        ],
+                                      ),
+                                      padding: EdgeInsets.all(5),
+                                      child: CachedNetworkImage(
+                                        imageUrl: "${s.data[i]['s_image']}",
+                                        height: 90,
+                                        progressIndicatorBuilder: (context, url, downloadProgress) =>
+                                            LinearProgressIndicator(value: downloadProgress.progress,
+                                              color: Colors.white70,
+                                              backgroundColor: Colors.red.withOpacity(0.3),
+                                            ),
+                                          errorWidget: (context, url, error) => Icon(Icons.error),
+                                      ),
+                                      ),
+                                  Text("${s.data[i]['s_name']}", textAlign: TextAlign.center, style: TextStyle(height: 1.5),),
+                                  Text("၏တရားတော်များ", style: TextStyle(fontSize: 12, color: Colors.grey) ,),
+                                  ],
+                            ),
+                            ),
+                          )
+                        );
+                      },
+                      itemCount: s.data.length,
                     );
+
                   }else if(s.hasError){
                     return Center(
                         child: IconButton(
@@ -208,3 +234,29 @@ class _SayardawState extends State<Sayardaw> {
     );
   }
 }
+
+/*
+return ListView.builder(
+                        itemCount: s.data.length,
+                        itemBuilder: (context, i){
+                          return Card(
+                              child:Container(
+                                padding: EdgeInsets.only(top: 10, bottom: 10),
+                                child: ListTile(
+                                  onTap: (){
+                                    // Navigator.of(context).push(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
+                                    Navigator.of(context).pushReplacement(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
+                                  },
+                                  leading: CircleAvatar(
+                                    backgroundImage: NetworkImage(s.data[i]['s_image']),
+                                  ),
+                                  title: Text(s.data[i]['s_name']),
+                                  subtitle: Text("၏တရားတော်များ"),
+                                  trailing: Icon(Icons.navigate_next),
+                                  // trailing: Icon(Icons.navigate_next),
+                                ),
+                              )
+                          );
+                        }
+                    );
+ */
