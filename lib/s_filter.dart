@@ -110,22 +110,24 @@ class _HomeAppState extends State<Sfilter> {
                   boxShadow: [
                     BoxShadow(
                       color: Colors.yellowAccent.withOpacity(0.3),
-                      spreadRadius: 3,
-                      blurRadius: 3,
+                      spreadRadius: 10,
+                      blurRadius: 10,
                       offset: Offset(0, 4), // changes position of shadow
                     ),
                   ],
                 ),
-               child:  CachedNetworkImage(
-                      imageUrl: "${widget.data['s_image']}",
-                      height: 50,
-                      progressIndicatorBuilder: (context, url, downloadProgress) =>
-                          LinearProgressIndicator(value: downloadProgress.progress,
-                            color: Colors.white70,
-                            backgroundColor: Colors.red.withOpacity(0.3),
-                          ),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    ),
+               child:  ClipOval(
+                 child: CachedNetworkImage(
+                   imageUrl: "${widget.data['s_image']}",
+                   height: 50,
+                   progressIndicatorBuilder: (context, url, downloadProgress) =>
+                       LinearProgressIndicator(value: downloadProgress.progress,
+                         color: Colors.white70,
+                         backgroundColor: Colors.red.withOpacity(0.3),
+                       ),
+                   errorWidget: (context, url, error) => Icon(Icons.error),
+                 ),
+               )
 
               ),
               Container(

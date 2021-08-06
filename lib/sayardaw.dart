@@ -192,7 +192,7 @@ class _SayardawState extends State<Sayardaw> {
                                       ),
                                       ),
                                   Text("${s.data[i]['s_name']}", textAlign: TextAlign.center, style: TextStyle(height: 1.5),),
-                                  Text("၏တရားတော်များ", style: TextStyle(fontSize: 12, color: Colors.grey) ,),
+                                  //Text("၏တရားတော်များ", style: TextStyle(fontSize: 12, color: Colors.grey) ,),
                                   ],
                             ),
                             ),

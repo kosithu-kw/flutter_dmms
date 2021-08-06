@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dmms/ad_helper.dart';
 import 'package:dmms/quote.dart';
 import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +26,7 @@ class _HomeState extends State<Home> {
   // TODO: Add _isBannerAdReady
   bool _isBannerAdReady = false;
 
+  /*
   String BannerId="";
   bool showBanner=false;
 
@@ -48,10 +50,12 @@ class _HomeState extends State<Home> {
 
   }
 
+   */
+
   _callBannerAds(){
     // TODO: Initialize _bannerAd
     _bannerAd = BannerAd(
-      adUnitId: BannerId,
+      adUnitId: AdHelper.bannerAdUnitId,
       request: AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(
@@ -74,10 +78,14 @@ class _HomeState extends State<Home> {
 
 
 
+
   @override
   void initState() {
 
-    _getAdId();
+   if(!_isBannerAdReady){
+     _callBannerAds();
+   }
+   // _getAdId();
 
     // TODO: implement initState
     super.initState();
@@ -130,7 +138,48 @@ class _HomeState extends State<Home> {
           body: SafeArea(
             child: Stack(
               children: [
-                _isBannerAdReady ? WithAds() : WithoutAds() ,
+                Container(
+                  padding: EdgeInsets.only(top: 20,left: 20, right: 20),
+                  decoration: _isBannerAdReady ? BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(
+                              width: 70.0,
+                              color: Colors.white
+                          )
+                      )
+                  ) : null,
+                  child: ListView(
+                    children: [
+                      Container(
+                          child: Image.asset("assets/images/logo.png", height: 120,),
+                      ),
+
+                      Card(
+                        child: Quote(),
+                      ),
+
+                      Container(
+                          child: InkWell(
+                            onTap: (){
+                              Navigator.pushReplacement(context, PageTransition(child: Sayardaw(), type: PageTransitionType.rightToLeft));
+                            },
+                            child: Card(
+                                child: Container(
+                                  padding: EdgeInsets.all(20),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.play_circle_outline_sharp),
+                                      SizedBox(width: 20,),
+                                      Text("တရားတော်များနားဆင်ရန်", style: TextStyle(color: Colors.black, fontSize: 16),)
+                                    ],
+                                  ),
+                                )
+                            ),
+                          )
+                      )
+                    ],
+                  )
+                ),
 
                 if (_isBannerAdReady)
                   Align(
@@ -151,6 +200,45 @@ class _HomeState extends State<Home> {
   }
 }
 
+/*
+C                           enter(
+                      child: Column (
+                        children: [
+                          Container(
+                            child: Image.asset("assets/images/logo.png", height: 120,),
+                          ),
+                          Container(
+                            child: Card(
+                              child: Quote(),
+                            ),
+                          ),
+                          SizedBox(height: 5,),
+                          Container(
+                              child: InkWell(
+                                onTap: (){
+                                  Navigator.pushReplacement(context, PageTransition(child: Sayardaw(), type: PageTransitionType.rightToLeft));
+                                },
+                                child: Card(
+                                    child: Container(
+                                      padding: EdgeInsets.all(20),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.play_circle_outline_sharp),
+                                          SizedBox(width: 20,),
+                                          Text("တရားတော်များနားဆင်ရန်", style: TextStyle(color: Colors.black, fontSize: 16),)
+                                        ],
+                                      ),
+                                    )
+                                ),
+                              )
+                          )
+                        ],
+                      )
+                  ),
+ */
+
+
+/*
 class WithAds extends StatefulWidget {
   const WithAds({Key? key}) : super(key: key);
 
@@ -260,3 +348,6 @@ class _WithoutAdsState extends State<WithoutAds> {
   }
 }
 
+
+
+ */

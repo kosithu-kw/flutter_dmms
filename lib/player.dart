@@ -30,7 +30,7 @@ class MyPlayer extends StatefulWidget {
 
 class _MyAppState extends State<MyPlayer> {
 
-
+/*
   String InterstitialId="";
   bool showInter=false;
 
@@ -56,6 +56,36 @@ class _MyAppState extends State<MyPlayer> {
 
   }
 
+ */
+
+  late BannerAd _bannerAd;
+
+  // TODO: Add _isBannerAdReady
+  bool _isBannerAdReady = false;
+
+  _callBannerAds(){
+    // TODO: Initialize _bannerAd
+    _bannerAd = BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
+    );
+
+    _bannerAd.load();
+  }
+
 
   // TODO: Add _interstitialAd
   InterstitialAd? _interstitialAd;
@@ -66,7 +96,7 @@ class _MyAppState extends State<MyPlayer> {
   // TODO: Implement _loadInterstitialAd()
   void _loadInterstitialAd() {
     InterstitialAd.load(
-      adUnitId: InterstitialId,
+      adUnitId: AdHelper.interstitialAdUnitId,
       request: AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
@@ -101,7 +131,14 @@ class _MyAppState extends State<MyPlayer> {
   void initState() {
     super.initState();
 
-    _getAdId();
+    if(!_isBannerAdReady){
+      _callBannerAds();
+    }
+
+    if(!_isInterstitialAdReady){
+      _loadInterstitialAd();
+    }
+   // _getAdId();
 
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -137,6 +174,7 @@ class _MyAppState extends State<MyPlayer> {
     // Release decoders and buffers back to the operating system making them
     // available for other apps to use.
     _interstitialAd?.dispose();
+    _bannerAd.dispose();
     _player.dispose();
     super.dispose();
   }
@@ -159,7 +197,7 @@ class _MyAppState extends State<MyPlayer> {
       home: Scaffold(
         floatingActionButton: FloatingActionButton(
           onPressed: (){
-            if(showInter && _isInterstitialAdReady){
+            if(_isInterstitialAdReady){
               _interstitialAd?.show();
               _player.stop();
             }else{
@@ -173,13 +211,33 @@ class _MyAppState extends State<MyPlayer> {
         body: SafeArea(
           child: Stack(
             children: [
+              if (_isBannerAdReady)
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: Container(
+                    width: _bannerAd.size.width.toDouble(),
+                    height: _bannerAd.size.height.toDouble(),
+                    child: AdWidget(ad: _bannerAd),
+                  ),
+                ),
               Column(
                 //crossAxisAlignment: CrossAxisAlignment.center,
                 //mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                      margin: EdgeInsets.only(top: 20),
-                      height: 250,
+                      margin: EdgeInsets.only(top: 100),
+                      height: 160,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.yellowAccent.withOpacity(0.3),
+                            spreadRadius: 20,
+                            blurRadius: 20,
+                            offset: Offset(0, 4), // changes position of shadow
+                          ),
+                        ],
+                      ),
 
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
