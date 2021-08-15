@@ -44,7 +44,7 @@ class _QuoteState extends State<Quote> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
+      padding: EdgeInsets.all(10),
       child: Center(
         child:
         !_isData ?
@@ -56,42 +56,41 @@ class _QuoteState extends State<Quote> {
           ),
         )
             :
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
 
-            Container(
-              child: Text(_title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20
+            ListView(
+              children: [
+                Container(
+                  child: Text(_title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.only(bottom: 20,top: 20),
-              child: Text(_content,
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                    color: Colors.black
+                Container(
+                  padding: EdgeInsets.only(top: 20),
+                  child: Text(_content,
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                        color: Colors.black
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            Container(
-              child: Text(_credit,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                ),
-              ),
+                Container(
+                  child: Text(_credit,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                    ),
+                  ),
+                )
+
+              ],
             )
 
-
-          ],
-        ),
       ),
 
     );

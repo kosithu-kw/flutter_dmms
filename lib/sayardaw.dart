@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:dmms/confirm_exit.dart';
 import 'package:dmms/readme.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
+import 'ad_helper.dart';
 import 'error.dart';
 import 'dart:async';
 import 'home.dart';
@@ -47,12 +50,53 @@ class _SayardawState extends State<Sayardaw> {
   final String _subTitle="ဆရာတော်ဘုရားကြီးများ";
 
 
+  late BannerAd _bannerAd;
+
+  // TODO: Add _isBannerAdReady
+  bool _isBannerAdReady = false;
+
+  _callBannerAds(){
+    // TODO: Initialize _bannerAd
+    _bannerAd = BannerAd(
+      adUnitId: AdHelper.bannerAdUnitId,
+      request: AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (ad, err) {
+          print('Failed to load a banner ad: ${err.message}');
+          _isBannerAdReady = false;
+          ad.dispose();
+        },
+      ),
+    );
+
+    _bannerAd.load();
+  }
+
+  @override
+  void initState() {
+    if(!_isBannerAdReady){
+      _callBannerAds();
+    }
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
         onWillPop: () async{
-          return  await Navigator.pushReplacement(context, PageTransition(child: Home(), type: PageTransitionType.rightToLeft));
+          return  await Navigator.pushReplacement(context, PageTransition(child:ConfirmExit(), type: PageTransitionType.rightToLeft));
         },
         child: MaterialApp(
           title: _subTitle,
@@ -74,7 +118,7 @@ class _SayardawState extends State<Sayardaw> {
               title: Text(_subTitle,
                       style: TextStyle(
                           color: Color.fromRGBO(0, 0, 0, 1),
-                          fontSize: 20
+                          //fontSize: 20
                       ),
 
                     ),
@@ -112,123 +156,153 @@ class _SayardawState extends State<Sayardaw> {
               ),
 
             ),
-            floatingActionButton: FloatingActionButton(
-              onPressed: (){
 
-                Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  Container(
+                    decoration:BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(
+                                width: 55.0,
+                                color: Colors.white
+                            )
+                        )
+                    ),
+                    padding: EdgeInsets.all(5),
+                    child: FutureBuilder(
+                      future: _isUpdate ? getData() : getData(),
+                      builder: (context, AsyncSnapshot s){
+                        if(_isUpdate)
+                          return Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
 
-              },
-              child: Icon(Icons.home_outlined, color: Colors.black,),
-              backgroundColor: Colors.white70,
-            ),
-            body: Container(
-              padding: EdgeInsets.all(5),
-              child: FutureBuilder(
-                future: _isUpdate ? getData() : getData(),
-                builder: (context, AsyncSnapshot s){
-                  if(_isUpdate)
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.only(left: 120, right: 120),
+                                  child: LinearProgressIndicator(),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.only(top: 20),
+                                  child: Text("Updating data from server..."),
+                                )
+                              ],
+                            ),
+                          );
 
-                        children: [
-                          Container(
-                            padding: EdgeInsets.only(left: 120, right: 120),
-                            child: LinearProgressIndicator(),
-                          ),
-                          Container(
-                            padding: EdgeInsets.only(top: 20),
-                            child: Text("Updating data from server..."),
-                          )
-                        ],
-                      ),
-                    );
+                        if(s.hasData){
+                          final orientation = MediaQuery.of(context).orientation;
 
-                  if(s.hasData){
+                          return GridView.builder(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: MediaQuery.of(context).size.width /
+                                  (MediaQuery.of(context).size.height / 1.8),
+                            ),
+                            shrinkWrap: true,
+                            itemBuilder: (_, i) {
+                              return InkWell(
+                                  onTap: (){
+                                    Navigator.of(context).pushReplacement(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
 
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).size.height / 1.8),
-                      ),
-                      shrinkWrap: true,
-                      itemBuilder: (_, i) {
-                        return InkWell(
-                          onTap: (){
-                            Navigator.of(context).pushReplacement(PageTransition(child: Sfilter(data: s.data[i]), type: PageTransitionType.rightToLeft));
-
-                          },
-                          child: Card(
-                            elevation: 2,
-                            shadowColor: Colors.black,
-                            child: Container(
-                              padding: EdgeInsets.all(2),
-                                child: Column(
-                                children: [
-                                    Container(
-                                      margin: EdgeInsets.only(bottom: 5),
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.yellowAccent.withOpacity(0.3),
-                                            spreadRadius: 3,
-                                            blurRadius: 3,
-                                            offset: Offset(0, 4), // changes position of shadow
+                                  },
+                                  child: Card(
+                                    elevation: 2,
+                                    shadowColor: Colors.black,
+                                    child: Container(
+                                      padding: EdgeInsets.only(bottom: 5),
+                                      child: Stack(
+                                        children: [
+                                          Align(
+                                            alignment: Alignment.topCenter,
+                                            child: Center(
+                                              child: Container(
+                                                margin: EdgeInsets.only(bottom: 5),
+                                                decoration: BoxDecoration(
+                                                  borderRadius: BorderRadius.circular(10),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.yellowAccent.withOpacity(0.3),
+                                                      spreadRadius: 3,
+                                                      blurRadius: 3,
+                                                      offset: Offset(0, 4), // changes position of shadow
+                                                    ),
+                                                  ],
+                                                ),
+                                                padding: EdgeInsets.all(5),
+                                                child: CachedNetworkImage(
+                                                  imageUrl: "${s.data[i]['s_image']}",
+                                                  //height: 90,
+                                                  progressIndicatorBuilder: (context, url, downloadProgress) =>
+                                                      CircularProgressIndicator(value: downloadProgress.progress,
+                                                        color: Colors.white70,
+                                                        backgroundColor: Colors.red.withOpacity(0.3),
+                                                      ),
+                                                  errorWidget: (context, url, error) => Icon(Icons.error),
+                                                ),
+                                              ),
+                                            )
                                           ),
+                                          Align(
+                                            alignment: Alignment.bottomCenter,
+                                            child: Container(
+                                              width: MediaQuery.of(context).size.width,
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white.withOpacity(0.7)
+                                              ),
+                                              child:  Text("${s.data[i]['s_name']}", textAlign: TextAlign.center, style: TextStyle(color: Colors.black,height: 1.5),),
+                                            ),
+                                          )
+                                          //Text("၏တရားတော်များ", style: TextStyle(fontSize: 12, color: Colors.grey) ,),
                                         ],
                                       ),
-                                      padding: EdgeInsets.all(5),
-                                      child: CachedNetworkImage(
-                                        imageUrl: "${s.data[i]['s_image']}",
-                                        height: 90,
-                                        progressIndicatorBuilder: (context, url, downloadProgress) =>
-                                            LinearProgressIndicator(value: downloadProgress.progress,
-                                              color: Colors.white70,
-                                              backgroundColor: Colors.red.withOpacity(0.3),
-                                            ),
-                                          errorWidget: (context, url, error) => Icon(Icons.error),
-                                      ),
-                                      ),
-                                  Text("${s.data[i]['s_name']}", textAlign: TextAlign.center, style: TextStyle(height: 1.5),),
-                                  //Text("၏တရားတော်များ", style: TextStyle(fontSize: 12, color: Colors.grey) ,),
-                                  ],
-                            ),
-                            ),
-                          )
-                        );
-                      },
-                      itemCount: s.data.length,
-                    );
+                                    ),
+                                  )
+                              );
+                            },
+                            itemCount: s.data.length,
+                          );
 
-                  }else if(s.hasError){
-                    return Center(
-                        child: IconButton(
-                          onPressed: (){
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (BuildContext context) => new ErrorApp()));
-                          },
-                          icon: Icon(Icons.refresh_outlined),
-                          color: Colors.black,
-                        )
-                    );
-                  }else{
-                    return Container(
-                      padding: EdgeInsets.only(left: 100, right: 100),
-                      child: Center(
-                        child: LinearProgressIndicator(
-                          color: Colors.grey,
-                          backgroundColor: Colors.black,
-                        ),
+                        }else if(s.hasError){
+                          return Center(
+                              child: IconButton(
+                                onPressed: (){
+                                  Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (BuildContext context) => new ErrorApp()));
+                                },
+                                icon: Icon(Icons.refresh_outlined),
+                                color: Colors.black,
+                              )
+                          );
+                        }else{
+                          return Container(
+                            padding: EdgeInsets.only(left: 100, right: 100),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.grey,
+                                backgroundColor: Colors.black,
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  if (_isBannerAdReady)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        width: _bannerAd.size.width.toDouble(),
+                        height: _bannerAd.size.height.toDouble(),
+                        child: AdWidget(ad: _bannerAd),
                       ),
-                    );
-                  }
-                },
+                    ),
+                ],
               ),
-            ),
+            )
           ),
         )
     );

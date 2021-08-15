@@ -2,13 +2,20 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dmms/readme.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:overlay_support/overlay_support.dart';
 import 'package:page_transition/page_transition.dart';
 import 'home.dart';
 import 'error.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Handling a background message: ${message.messageId}");
+}
 
 
 void main(){
@@ -37,8 +44,10 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MainApp(),
+    return OverlaySupport(
+        child: MaterialApp(
+          home: MainApp(),
+        )
     );
   }
 }
@@ -95,7 +104,108 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     // TODO: implement initState
     Timer(Duration(seconds: 3), () => startTime());
+
+    _callIntMessage();
     super.initState();
+  }
+
+  _callIntMessage(){
+    _totalNotifications = 0;
+    registerNotification();
+    checkForInitialMessage();
+
+    // For handling notification when the app is in background
+    // but not terminated
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      PushNotification notification = PushNotification(
+        title: message.notification?.title,
+        body: message.notification?.body,
+        dataTitle: message.data['title'],
+        dataBody: message.data['body'],
+      );
+
+      setState(() {
+        _notificationInfo = notification;
+        _totalNotifications++;
+      });
+    });
+  }
+
+
+
+
+  late final FirebaseMessaging _messaging;
+  late int _totalNotifications;
+  PushNotification? _notificationInfo;
+
+  void registerNotification() async {
+    await Firebase.initializeApp();
+    _messaging = FirebaseMessaging.instance;
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    NotificationSettings settings = await _messaging.requestPermission(
+      alert: true,
+      badge: true,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('User granted permission');
+
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print(
+            'Message title: ${message.notification?.title}, body: ${message.notification?.body}, data: ${message.data}');
+
+        // Parse the message received
+        PushNotification notification = PushNotification(
+          title: message.notification?.title,
+          body: message.notification?.body,
+          dataTitle: message.data['title'],
+          dataBody: message.data['body'],
+        );
+
+        setState(() {
+          _notificationInfo = notification;
+          _totalNotifications++;
+        });
+
+        if (_notificationInfo != null) {
+          // For displaying the notification as an overlay
+          showSimpleNotification(
+            Text(_notificationInfo!.title!, style: TextStyle(color: Colors.black),),
+            leading: Image.asset("icon/icon.png"),
+            subtitle: Text(_notificationInfo!.body!, style: TextStyle(color: Colors.black),),
+            background: Colors.white,
+            duration: Duration(seconds: 5),
+          );
+        }
+      });
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
+  // For handling notification when the app is in terminated state
+  checkForInitialMessage() async {
+    await Firebase.initializeApp();
+    RemoteMessage? initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      PushNotification notification = PushNotification(
+        title: initialMessage.notification?.title,
+        body: initialMessage.notification?.body,
+        dataTitle: initialMessage.data['title'],
+        dataBody: initialMessage.data['body'],
+      );
+
+      setState(() {
+        _notificationInfo = notification;
+        _totalNotifications++;
+      });
+    }
   }
 
 
@@ -107,23 +217,25 @@ class _MainAppState extends State<MainApp> {
     return Scaffold(
         body: Container(
           child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
                 
-                Container(
-                  padding: EdgeInsets.only(left: 80, right: 80, top: 80),
-                  child: Image.asset("assets/images/logo.png", width: 120,),
-                ),
-                
-                Text(_mSubTitle),
+               Center(
+                 child:  Container(
+                   child: Image.asset("assets/images/logo.png", width: 120,),
+                 ),
+               ),
 
-                Container(
-                  padding: EdgeInsets.only(left: 160, right: 160, top: 150),
-                  child: LinearProgressIndicator(
-                    color: Colors.grey,
-                    backgroundColor: Colors.black,
-                  )
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: 50,
+                      margin: EdgeInsets.only(bottom: 50),
+                      child: LinearProgressIndicator(
+                        color: Colors.grey,
+                        backgroundColor: Colors.black,
+                      )
+                  ),
                 )
               ],
             ),
@@ -135,3 +247,16 @@ class _MainAppState extends State<MainApp> {
 }
 
 
+class PushNotification {
+  PushNotification({
+    this.title,
+    this.body,
+    this.dataTitle,
+    this.dataBody,
+  });
+
+  String? title;
+  String? body;
+  String? dataTitle;
+  String? dataBody;
+}

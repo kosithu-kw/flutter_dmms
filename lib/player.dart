@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:audio_session/audio_session.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dmms/sayardaw.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -104,7 +105,7 @@ class _MyAppState extends State<MyPlayer> {
 
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
-              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
+              Navigator.push(context, PageTransition(type: PageTransitionType.rightToLeft, child: Sayardaw()));
             },
           );
 
@@ -202,7 +203,7 @@ class _MyAppState extends State<MyPlayer> {
               _player.stop();
             }else{
               _player.stop();
-              Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Home()));
+              Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Sayardaw()));
             }
           },
           child: Icon(Icons.home, color: Colors.black,),

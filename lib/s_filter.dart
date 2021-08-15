@@ -7,6 +7,7 @@ import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
+import 'confirm_exit.dart';
 import 'error.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
@@ -75,7 +76,12 @@ class _HomeAppState extends State<Sfilter> {
 
   @override
   Widget build(BuildContext context) {
-  return Scaffold(
+  return WillPopScope(
+      onWillPop: () async{
+        return  await Navigator.pushReplacement(context, PageTransition(child:ConfirmExit(), type: PageTransitionType.rightToLeft));
+      },
+    child: MaterialApp(
+    home :Scaffold(
 
       appBar: AppBar(
         leading: IconButton(
@@ -230,7 +236,8 @@ class _HomeAppState extends State<Sfilter> {
             },
           ),
         ),
-
+      )
+      )
     );
   }
 }

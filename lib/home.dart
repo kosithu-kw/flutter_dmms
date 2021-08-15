@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dmms/ad_helper.dart';
+import 'package:dmms/confirm_exit.dart';
 import 'package:dmms/quote.dart';
 import 'package:dmms/sayardaw.dart';
 import 'package:flutter/material.dart';
@@ -83,7 +84,7 @@ class _HomeState extends State<Home> {
   void initState() {
 
    if(!_isBannerAdReady){
-     _callBannerAds();
+     //_callBannerAds();
    }
    // _getAdId();
 
@@ -94,42 +95,17 @@ class _HomeState extends State<Home> {
   @override
   void dispose() {
     // TODO: implement dispose
-    _bannerAd.dispose();
+   // _bannerAd.dispose();
     super.dispose();
   }
 
 
-  _confirmExit(){
 
-    _showAlert(){
-      return  AlertDialog(
-        //title: Text("အတည်ပြုပါ"),
-        content: Text("Exit from application ?"),
-        actions: [
-          TextButton(onPressed: (){
-            Navigator.pop(context);
-          }, child: Text("No", style: TextStyle(color: Colors.black),)),
-          TextButton(onPressed: (){
-            exit(0);
-          }, child: Text("Yes", style: TextStyle(color: Colors.black),))
-        ],
-
-      );
-    }
-
-    // show the dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return _showAlert();
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return WillPopScope(onWillPop: ()async{
-      return await _confirmExit();
+      return await Navigator.push(context, MaterialPageRoute(builder: (context)=>ConfirmExit()));
     },
       child: MaterialApp(
 
@@ -148,14 +124,17 @@ class _HomeState extends State<Home> {
                           )
                       )
                   ) : null,
-                  child: ListView(
+                  child: Column(
                     children: [
                       Container(
                           child: Image.asset("assets/images/logo.png", height: 120,),
                       ),
 
                       Card(
-                        child: Quote(),
+                        child: Container(
+                          height: 300,
+                          child: Quote(),
+                        ),
                       ),
 
                       Container(

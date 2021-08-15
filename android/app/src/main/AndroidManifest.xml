@@ -39,7 +39,13 @@
             android:name="flutterEmbedding"
             android:value="2" />
        <meta-data
+           android:name="com.google.firebase.messaging.default_notification_icon"
+           android:resource="@drawable/logo" />
+       <meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
            android:value="ca-app-pub-9618108930385944~3853264034"/>
+       <!--<meta-data
+           android:name="com.google.android.gms.ads.APPLICATION_ID"
+           android:value="ca-app-pub-3940256099942544~3347511713"/> -->
     </application>
 </manifest>
