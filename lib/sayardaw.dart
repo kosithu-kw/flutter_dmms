@@ -211,45 +211,48 @@ class _SayardawState extends State<Sayardaw> {
                                     elevation: 2,
                                     shadowColor: Colors.black,
                                     child: Container(
-                                      padding: EdgeInsets.only(bottom: 5),
+                                      padding: EdgeInsets.only(bottom: 5, top: 5),
                                       child: Stack(
                                         children: [
                                           Align(
                                             alignment: Alignment.topCenter,
-                                            child: Center(
+                                            child: Container(
                                               child: Container(
-                                                margin: EdgeInsets.only(bottom: 5),
+                                               // margin: EdgeInsets.only(bottom: 5),
                                                 decoration: BoxDecoration(
-                                                  borderRadius: BorderRadius.circular(10),
+                                                  borderRadius: BorderRadius.circular(20),
                                                   boxShadow: [
                                                     BoxShadow(
                                                       color: Colors.yellowAccent.withOpacity(0.3),
-                                                      spreadRadius: 3,
-                                                      blurRadius: 3,
+                                                      spreadRadius: 10,
+                                                      blurRadius: 10,
                                                       offset: Offset(0, 4), // changes position of shadow
                                                     ),
                                                   ],
                                                 ),
-                                                padding: EdgeInsets.all(5),
-                                                child: CachedNetworkImage(
-                                                  imageUrl: "${s.data[i]['s_image']}",
-                                                  //height: 90,
-                                                  progressIndicatorBuilder: (context, url, downloadProgress) =>
-                                                      CircularProgressIndicator(value: downloadProgress.progress,
-                                                        color: Colors.white70,
-                                                        backgroundColor: Colors.red.withOpacity(0.3),
-                                                      ),
-                                                  errorWidget: (context, url, error) => Icon(Icons.error),
-                                                ),
+                                               // padding: EdgeInsets.all(5),
+                                                child: ClipOval(
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: "${s.data[i]['s_image']}",
+                                                    height: 120,
+                                                    progressIndicatorBuilder: (context, url, downloadProgress) =>
+                                                        CircularProgressIndicator(value: downloadProgress.progress,
+                                                          color: Colors.white70,
+                                                          backgroundColor: Colors.red.withOpacity(0.3),
+                                                        ),
+                                                    errorWidget: (context, url, error) => Icon(Icons.error),
+                                                  ),
+                                                )
                                               ),
                                             )
                                           ),
                                           Align(
                                             alignment: Alignment.bottomCenter,
                                             child: Container(
+                                              padding: EdgeInsets.only(top: 5, bottom: 5, left: 2, right: 2),
                                               width: MediaQuery.of(context).size.width,
                                               decoration: BoxDecoration(
-                                                  color: Colors.white.withOpacity(0.7)
+                                                  color: Colors.white.withOpacity(0.9)
                                               ),
                                               child:  Text("${s.data[i]['s_name']}", textAlign: TextAlign.center, style: TextStyle(color: Colors.black,height: 1.5),),
                                             ),

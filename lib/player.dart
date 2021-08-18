@@ -196,7 +196,7 @@ class _MyAppState extends State<MyPlayer> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
+       /* floatingActionButton: FloatingActionButton(
           onPressed: (){
             if(_isInterstitialAdReady){
               _interstitialAd?.show();
@@ -209,12 +209,14 @@ class _MyAppState extends State<MyPlayer> {
           child: Icon(Icons.home, color: Colors.black,),
           backgroundColor: Colors.white70,
         ),
+
+        */
         body: SafeArea(
           child: Stack(
             children: [
               if (_isBannerAdReady)
                 Align(
-                  alignment: Alignment.topCenter,
+                  alignment: Alignment.bottomCenter,
                   child: Container(
                     width: _bannerAd.size.width.toDouble(),
                     height: _bannerAd.size.height.toDouble(),
@@ -226,7 +228,7 @@ class _MyAppState extends State<MyPlayer> {
                 //mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                      margin: EdgeInsets.only(top: 100),
+                      margin: EdgeInsets.only(top: 60),
                       height: 160,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
@@ -270,7 +272,7 @@ class _MyAppState extends State<MyPlayer> {
                     ),
                   ),
                   // Display play/pause button and volume/speed sliders.
-                  ControlButtons(_player),
+                 // ControlButtons(_player),
                   // Display seek bar. Using StreamBuilder, this widget rebuilds
                   // each time the position, buffered position or duration changes.
                   StreamBuilder<PositionData>(
@@ -286,10 +288,41 @@ class _MyAppState extends State<MyPlayer> {
                       );
                     },
                   ),
+                  SizedBox(height: 20,),
+                  Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+
+                      child:Card(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                            onPressed: (){
+                              Navigator.pop(context);
+                            },
+                            icon: Icon(Icons.arrow_back, color: Colors.black, size: 25,)
+                        ),
+                        ControlButtons(_player),
+                        IconButton(
+                            onPressed: (){
+                              if(_isInterstitialAdReady){
+                                _interstitialAd?.show();
+                                _player.stop();
+                              }else{
+                                _player.stop();
+                                Navigator.of(context).push(PageTransition(type: PageTransitionType.rightToLeft, child: Sayardaw()));
+                              }
+                            },
+                            icon: Icon(Icons.home, color: Colors.black, size: 25,)
+                        )
+                      ],
+                    ),
+                    )
+                  ),
 
                 ],
               ),
-              Container(
+             /* Container(
                 margin: EdgeInsets.only(left: 20, bottom: 15),
                 child: Align(
                   alignment: Alignment.bottomLeft,
@@ -312,6 +345,8 @@ class _MyAppState extends State<MyPlayer> {
                   )
                 ),
               )
+
+              */
             ],
           )
         ),

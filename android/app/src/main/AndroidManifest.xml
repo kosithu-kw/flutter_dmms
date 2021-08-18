@@ -43,7 +43,7 @@
            android:resource="@drawable/logo" />
        <meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
-           android:value="ca-app-pub-9618108930385944~3853264034"/>
+           android:value="ca-app-pub-1913450030962078~1934972274"/>
        <!--<meta-data
            android:name="com.google.android.gms.ads.APPLICATION_ID"
            android:value="ca-app-pub-3940256099942544~3347511713"/> -->
